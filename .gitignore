@@ -1,0 +1,15 @@
+.DS_Store
+node_modules/
+dist/
+
+# Local runtime config and account state
+config.json
+data/
+
+# Logs and generated reports
+*.log
+*.jsonl
+
+# Environment files
+.env
+.env.*

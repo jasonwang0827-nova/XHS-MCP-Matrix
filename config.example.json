@@ -1,0 +1,17 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 18160
+  },
+  "upstream": {
+    "url": "http://localhost:18060/mcp",
+    "timeout_ms": 120000
+  },
+  "accounts": {
+    "data_dir": "/Users/jason/Nova/XHS-mcp/data/accounts",
+    "binary_path": "/Users/jason/AI_Workspace/xiaohongshu-mcp/xiaohongshu-mcp-darwin-arm64",
+    "default_account_id": "xhs_default",
+    "base_port": 18060,
+    "host": "127.0.0.1"
+  }
+}
