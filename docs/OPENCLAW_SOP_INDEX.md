@@ -2,6 +2,32 @@
 
 OpenClaw 先读这份索引，再按任务读取对应 SOP。
 
+## 最先读取
+
+### 功能地图
+
+```text
+/Users/jason/Nova/XHS-mcp/docs/OPENCLAW_FUNCTION_MAP.md
+```
+
+用途：
+
+```text
+了解全部页面、接口、功能边界和禁止动作
+```
+
+### 操作手册
+
+```text
+/Users/jason/Nova/XHS-mcp/docs/OPENCLAW_OPERATOR_MANUAL.md
+```
+
+用途：
+
+```text
+带用户一步一步完成账号、搜索、评论线索、报表、发布等操作
+```
+
 ## 必读规则
 
 所有动作都必须先确认 `account_id`。
