@@ -8,6 +8,7 @@ export type FeedDetailRequest = {
   click_more_replies?: boolean;
   reply_limit?: number;
   scroll_speed?: 'slow' | 'normal' | 'fast' | string;
+  detail_timeout_ms?: number;
 };
 
 export type NormalizedFeedDetail = {
@@ -32,6 +33,8 @@ export type NormalizedFeedDetail = {
     author_id: string;
     liked_count: number | null;
     created_at: string | null;
+    parent_comment_id?: string;
+    level?: number;
   }>;
   raw: unknown;
 };
@@ -39,5 +42,6 @@ export type NormalizedFeedDetail = {
 export type FeedDetailResponse = {
   ok: boolean;
   account_id: string;
+  mcp_url?: string;
   detail: NormalizedFeedDetail;
 };

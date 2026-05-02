@@ -1,4 +1,6 @@
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 import { getFeedDetail } from '../feed-detail/service';
 import { upsertLeads } from '../leads/store';
 import { LeadItem, LeadResult } from '../leads/types';
@@ -12,7 +14,11 @@ export type CommentLeadRequest = {
   max_notes?: number;
   load_all_comments?: boolean;
   comments_limit?: number;
+  detail_timeout_ms?: number;
+  save_partial_report?: boolean;
 };
+
+const COMMENT_REPORT_DIR = '/Users/jason/Nova/XHS-mcp/data/reports/comment-leads';
 
 function compactText(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
@@ -84,6 +90,8 @@ export async function generateCommentLeadReport(request: CommentLeadRequest) {
   if (!keywords.length) throw new Error('keywords is required');
 
   const maxNotes = Math.max(1, Math.min(Number(request.max_notes || 10), 30));
+  const detailTimeoutMs = Math.max(8000, Math.min(Number(request.detail_timeout_ms || 30000), 120000));
+  const startedAt = new Date().toISOString();
   const scannedNotes = [];
   const errors = [];
   const leads: LeadItem[] = [];
@@ -101,6 +109,7 @@ export async function generateCommentLeadReport(request: CommentLeadRequest) {
         xsec_token: item.xsec_token,
         load_all_comments: Boolean(request.load_all_comments),
         limit: request.comments_limit,
+        detail_timeout_ms: detailTimeoutMs,
       });
       const comments = detail.detail.comments || [];
       const matched = comments
@@ -114,22 +123,38 @@ export async function generateCommentLeadReport(request: CommentLeadRequest) {
         .filter(Boolean) as LeadItem[];
       leads.push(...matched);
       scannedNotes.push({
+        account_id: item.source_account_id,
         note_id: item.note_id,
         title: item.title,
+        mcp_url: detail.mcp_url,
         comments_scanned: comments.length,
         matched_comments: matched.length,
       });
     } catch (error: any) {
-      errors.push({ note_id: item.note_id, title: item.title, error: error?.message || String(error) });
+      errors.push({
+        account_id: item.source_account_id,
+        note_id: item.note_id,
+        title: item.title,
+        error: error?.message || String(error),
+      });
     }
   }
 
   const upsert = upsertLeads(leads);
-  return {
+  const report = {
     ok: true,
     keywords,
+    started_at: startedAt,
+    finished_at: new Date().toISOString(),
+    options: {
+      max_notes: maxNotes,
+      load_all_comments: Boolean(request.load_all_comments),
+      comments_limit: request.comments_limit || null,
+      detail_timeout_ms: detailTimeoutMs,
+    },
     summary: {
       scanned_notes: scannedNotes.length,
+      requested_notes: Math.min(response.results.length, maxNotes),
       matched_comments: leads.length,
       inserted: upsert.inserted,
       updated: upsert.updated,
@@ -140,4 +165,13 @@ export async function generateCommentLeadReport(request: CommentLeadRequest) {
     leads,
     upsert,
   };
+  if (request.save_partial_report !== false) {
+    fs.mkdirSync(COMMENT_REPORT_DIR, { recursive: true });
+    const safeKeyword = compactText(response.keyword).replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]+/g, '_').slice(0, 40) || 'comment-leads';
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const file = path.join(COMMENT_REPORT_DIR, `${timestamp}_${safeKeyword}.json`);
+    fs.writeFileSync(file, JSON.stringify(report, null, 2));
+    return { ...report, saved_file: file };
+  }
+  return report;
 }

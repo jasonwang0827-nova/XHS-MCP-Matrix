@@ -1,8 +1,11 @@
 import { startAccount } from '../accounts/runtime';
+import { findAccount } from '../accounts/store';
 import { toolRegistry } from '../tool-registry';
 import { FeedDetailRequest, FeedDetailResponse, NormalizedFeedDetail } from './types';
 
 const DETAIL_TIMEOUT_MS = 45000;
+const MIN_DETAIL_TIMEOUT_MS = 8000;
+const MAX_DETAIL_TIMEOUT_MS = 120000;
 
 function compactText(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
@@ -58,16 +61,32 @@ function normalizeDetail(parsed: any): NormalizedFeedDetail {
     ? commentsContainer
     : (Array.isArray(commentsContainer?.list) ? commentsContainer.list : []);
   const comments = Array.isArray(commentsSource)
-    ? commentsSource.map((comment: any) => {
+    ? commentsSource.flatMap((comment: any) => {
         const commentUser = comment?.user || comment?.userInfo || comment?.targetComment?.user || {};
-        return {
+        const parent = {
           comment_id: compactText(comment?.id || comment?.commentId),
           content: compactText(comment?.content || comment?.text),
           author_name: compactText(commentUser?.nickname || commentUser?.nickName),
           author_id: compactText(commentUser?.userId),
           liked_count: asNumber(comment?.likeCount || comment?.likedCount),
           created_at: asIsoTime(comment?.createTime || comment?.time),
+          level: 1,
         };
+        const repliesSource = Array.isArray(comment?.subComments) ? comment.subComments : [];
+        const replies = repliesSource.map((reply: any) => {
+          const replyUser = reply?.user || reply?.userInfo || {};
+          return {
+            comment_id: compactText(reply?.id || reply?.commentId),
+            content: compactText(reply?.content || reply?.text),
+            author_name: compactText(replyUser?.nickname || replyUser?.nickName),
+            author_id: compactText(replyUser?.userId),
+            liked_count: asNumber(reply?.likeCount || reply?.likedCount),
+            created_at: asIsoTime(reply?.createTime || reply?.time),
+            parent_comment_id: parent.comment_id,
+            level: 2,
+          };
+        });
+        return [parent, ...replies];
       })
     : [];
 
@@ -100,6 +119,11 @@ export async function getFeedDetail(request: FeedDetailRequest): Promise<FeedDet
   if (!xsecToken) throw new Error('xsec_token is required');
 
   await startAccount(accountId);
+  const account = findAccount(accountId);
+  const timeoutMs = Math.max(
+    MIN_DETAIL_TIMEOUT_MS,
+    Math.min(MAX_DETAIL_TIMEOUT_MS, Number(request.detail_timeout_ms || DETAIL_TIMEOUT_MS)),
+  );
   const toolResult = await withTimeout(
     toolRegistry.get_feed_detail({
       account_id: accountId,
@@ -111,7 +135,7 @@ export async function getFeedDetail(request: FeedDetailRequest): Promise<FeedDet
       reply_limit: request.reply_limit,
       scroll_speed: request.scroll_speed,
     }),
-    DETAIL_TIMEOUT_MS,
+    timeoutMs,
     `get_feed_detail ${feedId}`,
   );
 
@@ -123,6 +147,7 @@ export async function getFeedDetail(request: FeedDetailRequest): Promise<FeedDet
   return {
     ok: true,
     account_id: accountId,
+    mcp_url: account?.mcp_url,
     detail: normalizeDetail(parseToolText(toolResult)),
   };
 }
