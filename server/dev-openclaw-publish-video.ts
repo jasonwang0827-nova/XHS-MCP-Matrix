@@ -29,6 +29,7 @@ async function main() {
     daily_limit: args.daily_limit ? Number(args.daily_limit) : 1,
     min_interval_hours: args.min_interval_hours ? Number(args.min_interval_hours) : 6,
     max_retry: args.max_retry ? Number(args.max_retry) : 2,
+    schedule_at: args.schedule_at || null,
     scan_limit: args.scan_limit ? Number(args.scan_limit) : undefined,
     max_publish_count: args.max_publish_count ? Number(args.max_publish_count) : 1,
     check_comments_after_minutes: args.check_comments_after_minutes ? Number(args.check_comments_after_minutes) : 60,

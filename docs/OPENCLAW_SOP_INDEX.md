@@ -83,6 +83,18 @@ npm run dev:list-accounts
 按账号放视频和文案、OpenClaw 一键发布、发布后归档
 ```
 
+### 小红书官方定时发布
+
+```text
+/Users/jason/Nova/XHS-mcp/docs/OPENCLAW_SCHEDULED_PUBLISH_SOP.md
+```
+
+用途：
+
+```text
+按账号放视频和文案，传 schedule_at，让小红书官方发布页执行定时发布
+```
+
 ### 增长找博主
 
 ```text

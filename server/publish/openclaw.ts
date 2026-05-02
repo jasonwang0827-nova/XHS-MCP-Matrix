@@ -13,6 +13,7 @@ export type OpenClawPublishInput = {
   daily_limit?: number;
   min_interval_hours?: number;
   max_retry?: number;
+  schedule_at?: string | null;
   scan_limit?: number;
   max_publish_count?: number;
   check_comments_after_minutes?: number | null;
@@ -33,6 +34,7 @@ export async function runOpenClawOneClickPublish(input: OpenClawPublishInput) {
     daily_limit: input.daily_limit ?? 1,
     min_interval_hours: input.min_interval_hours ?? 6,
     max_retry: input.max_retry ?? 2,
+    schedule_at: input.schedule_at || null,
     limit: input.scan_limit,
     check_comments_after_minutes: input.check_comments_after_minutes ?? 60,
   });

@@ -37,9 +37,13 @@ function normalizeArgs(args?: Record<string, any>, localName?: string) {
   if (localName === 'publish_with_video') {
     const mapped: Record<string, any> = {};
     if (normalized.video_path) mapped.video = normalized.video_path;
+    if (normalized.video) mapped.video = normalized.video;
     if (normalized.title) mapped.title = normalized.title;
     if (normalized.content) mapped.content = normalized.content;
-    // tags is already part of content per upstream docs, so skip
+    if (normalized.schedule_at) mapped.schedule_at = normalized.schedule_at;
+    if (normalized.tags) mapped.tags = normalized.tags;
+    if (normalized.visibility) mapped.visibility = normalized.visibility;
+    if (normalized.products) mapped.products = normalized.products;
     return mapped;
   }
   if (localName === 'publish_content') {

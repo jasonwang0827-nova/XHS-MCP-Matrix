@@ -69,6 +69,7 @@ export function renderPublishPage() {
           <input id="scanSourceDir" />
           <input id="scanArchiveDir" />
           <input id="scanLimit" type="number" min="1" max="100" value="20" />
+          <input id="scanScheduleAt" type="datetime-local" title="小红书官方定时发布时间，可留空立即发布" />
         </div>
         <div class="row">
           <label class="row muted" style="gap:6px"><input id="scanSubmit" type="checkbox" checked /> OpenClaw 自动发布时真实提交</label>
@@ -78,7 +79,7 @@ export function renderPublishPage() {
           <button onclick="scanVideoFolder()">扫描导入视频</button>
           <button class="primary" onclick="openClawPublishVideo()">一键发布一条</button>
         </div>
-        <p class="muted">规则：视频和文案同名，例如 demo.mp4 + demo.txt / demo.md / demo.json。发布成功后视频和文案会移动到归档目录。</p>
+        <p class="muted">规则：视频和文案同名，例如 demo.mp4 + demo.txt / demo.md / demo.json。定时发布时间会交给小红书官方发布页，需设置为未来 1 小时到 14 天内；留空则立即发布。发布成功后视频和文案会移动到归档目录。</p>
       </div>
     </section>
 
@@ -146,6 +147,10 @@ export function renderPublishPage() {
     }
     function splitList(value) {
       return String(value || '').split(/[，,\\n]+/).map((item) => item.trim()).filter(Boolean);
+    }
+    function dateTimeLocalToIso(elementId) {
+      const value = document.getElementById(elementId).value;
+      return value ? new Date(value).toISOString() : null;
     }
     function selectedAccountId() {
       return document.getElementById('account').value;
@@ -265,7 +270,7 @@ export function renderPublishPage() {
         video_path: document.getElementById('videoPath').value.trim() || null,
         cover_path: document.getElementById('coverPath').value.trim() || null,
         target_accounts: [accountId],
-        schedule_at: document.getElementById('scheduleAt').value ? new Date(document.getElementById('scheduleAt').value).toISOString() : null,
+        schedule_at: dateTimeLocalToIso('scheduleAt'),
         submit: document.getElementById('submit').checked,
         approval_required: true,
         approved: document.getElementById('approved').checked,
@@ -292,6 +297,7 @@ export function renderPublishPage() {
         submit: document.getElementById('scanSubmit').checked,
         approved: document.getElementById('scanApproved').checked,
         approval_required: !document.getElementById('scanApproved').checked,
+        schedule_at: dateTimeLocalToIso('scanScheduleAt'),
         check_comments_after_minutes: Number(document.getElementById('scanCheckMinutes').value || 60),
         require_caption: document.getElementById('requireCaption').checked,
       };
@@ -314,6 +320,7 @@ export function renderPublishPage() {
         approved: document.getElementById('scanApproved').checked,
         approval_required: !document.getElementById('scanApproved').checked,
         require_caption: document.getElementById('requireCaption').checked,
+        schedule_at: dateTimeLocalToIso('scanScheduleAt'),
         check_comments_after_minutes: Number(document.getElementById('scanCheckMinutes').value || 60),
         execute: true,
       };

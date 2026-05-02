@@ -114,6 +114,7 @@ Content-Type: application/json
 ```json
 {
   "account_id": "xhs_test_01",
+  "schedule_at": "2026-05-03T22:00:00.000Z",
   "submit": true,
   "approved": true,
   "approval_required": false,
@@ -126,6 +127,14 @@ Content-Type: application/json
 ```
 
 注意：这里不需要传 `source_dir` 和 `archive_dir`。系统会根据 `account_id` 自动找到该账号自己的目录。
+
+`schedule_at` 是可选字段：
+
+- 不传：立即发布
+- 传入：系统会立即上传视频，并在小红书官方发布页设置“定时发布”
+- 时间格式：ISO8601，例如 `2026-05-03T22:00:00.000Z`
+- 时间范围：建议未来 1 小时到 14 天内
+- 这不是本地定时器，不需要 OpenClaw 等到发布时间再调用
 
 ## 7. Dry Run 测试
 
@@ -163,6 +172,7 @@ npm run dev:openclaw-publish-video -- \
   --approved true \
   --approval_required false \
   --require_caption true \
+  --schedule_at 2026-05-03T22:00:00.000Z \
   --max_publish_count 1
 ```
 
@@ -175,7 +185,7 @@ npm run dev:openclaw-publish-video -- \
 -> 找同名文案
 -> 加入内容池
 -> 生成发布任务
--> 执行本次生成的任务
+-> 执行本次生成的任务；如果有 schedule_at，则设置小红书官方定时发布
 -> 写入发布记录
 -> 成功后把视频和文案移动到该账号 published
 -> 如果返回笔记 ID，创建延迟评论检查任务
@@ -304,4 +314,3 @@ OpenClaw 每次调用建议：
   "execute": false
 }
 ```
-

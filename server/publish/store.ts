@@ -211,7 +211,6 @@ export function generatePublishTaskFromContentPool(): MatrixTask | null {
     updatePublishContentStatus(item);
     if (item.status !== 'pending' && item.status !== 'partial') continue;
     if (!item.target_accounts.length) continue;
-    if (item.schedule_at && new Date(item.schedule_at) > current) continue;
 
     for (const accountId of item.target_accounts) {
       if (item.published_accounts.includes(accountId)) continue;
@@ -235,7 +234,7 @@ export function generatePublishTaskFromContentPool(): MatrixTask | null {
         client_id: item.client_id || null,
         created_at: now(),
         updated_at: now(),
-        run_at: item.schedule_at || now(),
+        run_at: now(),
       };
       return task;
     }
@@ -258,6 +257,7 @@ function buildPublishPayload(item: PublishContentItem, accountId: string) {
     source_dir: item.source_dir || undefined,
     caption_path: item.caption_path || undefined,
     archive_dir: item.archive_dir || undefined,
+    schedule_at: item.schedule_at || undefined,
     check_comments_after_minutes: item.check_comments_after_minutes || undefined,
     submit: Boolean(item.submit),
     approval_required: item.approval_required,
