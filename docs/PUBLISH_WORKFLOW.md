@@ -103,6 +103,7 @@ TXT / MD：
 正文第一行
 正文第二行
 标签：留学, 加拿大, 选校
+可见范围：仅自己可见
 ```
 
 JSON：
@@ -111,7 +112,8 @@ JSON：
 {
   "title": "这是小红书标题",
   "content": "这是正文",
-  "tags": ["留学", "加拿大", "选校"]
+  "tags": ["留学", "加拿大", "选校"],
+  "visibility": "仅自己可见"
 }
 ```
 
@@ -137,6 +139,7 @@ JSON：
 - `archive_dir`
 - `target_accounts`
 - `schedule_at`
+- `visibility`
 - `submit`
 - `approval_required`
 - `approved`
@@ -165,11 +168,12 @@ Content-Type: application/json
 {
   "account_id": "xhs_test_01",
   "schedule_at": "2026-05-03T22:00:00.000Z",
+  "visibility": "仅自己可见",
   "submit": true,
   "approved": true,
   "approval_required": false,
   "require_caption": true,
-  "scan_limit": 20,
+  "scan_limit": 1,
   "max_publish_count": 1,
   "check_comments_after_minutes": 60,
   "execute": true
@@ -180,12 +184,14 @@ Content-Type: application/json
 
 `schedule_at` 可选。传入后，系统会立即打开小红书发布页上传视频，并使用小红书官方“定时发布”能力设置发布时间；不是本地服务到点再发布。时间必须是 ISO8601 格式，并且建议设置为未来 1 小时到 14 天内。留空表示立即发布。
 
+`visibility` 可选，默认 `仅自己可见`。支持：`仅自己可见`、`仅互关好友可见`、`公开可见`。账号前期测试建议保持 `仅自己可见`。
+
 ## 一键发布流程
 
 ```text
 读取 account_id
 -> 自动定位 /assets/accounts/{account_id}/video-inbox
--> 扫描视频文件
+-> 扫描视频文件，默认只导入 1 条
 -> 查找同名文案
 -> 创建内容池记录
 -> 生成发布任务
@@ -217,6 +223,7 @@ npm run dev:openclaw-publish-video -- \
   --approval_required false \
   --require_caption true \
   --schedule_at 2026-05-03T22:00:00.000Z \
+  --visibility 仅自己可见 \
   --max_publish_count 1
 ```
 

@@ -68,8 +68,13 @@ export function renderPublishPage() {
         <div class="grid">
           <input id="scanSourceDir" />
           <input id="scanArchiveDir" />
-          <input id="scanLimit" type="number" min="1" max="100" value="20" />
+          <input id="scanLimit" type="number" min="1" max="100" value="1" />
           <input id="scanScheduleAt" type="datetime-local" title="小红书官方定时发布时间，可留空立即发布" />
+          <select id="scanVisibility" title="小红书可见范围">
+            <option value="仅自己可见" selected>仅自己可见</option>
+            <option value="仅互关好友可见">仅互关好友可见</option>
+            <option value="公开可见">公开可见</option>
+          </select>
         </div>
         <div class="row">
           <label class="row muted" style="gap:6px"><input id="scanSubmit" type="checkbox" checked /> OpenClaw 自动发布时真实提交</label>
@@ -93,6 +98,11 @@ export function renderPublishPage() {
           </select>
           <input id="title" class="wide" placeholder="标题" />
           <input id="scheduleAt" type="datetime-local" />
+          <select id="visibility" title="小红书可见范围">
+            <option value="仅自己可见" selected>仅自己可见</option>
+            <option value="仅互关好友可见">仅互关好友可见</option>
+            <option value="公开可见">公开可见</option>
+          </select>
         </div>
         <textarea id="content" placeholder="正文内容"></textarea>
         <input id="tags" placeholder="标签，用逗号分隔，如 留学, 加拿大, 选校" />
@@ -189,12 +199,12 @@ export function renderPublishPage() {
           '<td>' + tags + '</td>' +
           '<td class="mono">' + assets + '</td>' +
           '<td>' + approved + queued + '<div class="muted">状态：' + escapeHtml(item.status) + '</div></td>' +
-          '<td>' + escapeHtml(item.schedule_at || '立即') + '</td>' +
+          '<td>' + escapeHtml(item.schedule_at || '立即') + '<div class="muted">可见：' + escapeHtml(item.visibility || '仅自己可见') + '</div></td>' +
           '<td><button onclick="approveContent(\\'' + escapeHtml(item.content_id) + '\\')">审核内容</button></td>' +
         '</tr>';
       }).join('');
       document.getElementById('contentPool').innerHTML =
-        '<table><thead><tr><th>内容</th><th>类型</th><th>标签</th><th>素材</th><th>状态</th><th>计划时间</th><th>操作</th></tr></thead><tbody>' +
+        '<table><thead><tr><th>内容</th><th>类型</th><th>标签</th><th>素材</th><th>状态</th><th>计划/可见</th><th>操作</th></tr></thead><tbody>' +
         rows + '</tbody></table>';
     }
     function renderTasks() {
@@ -271,6 +281,7 @@ export function renderPublishPage() {
         cover_path: document.getElementById('coverPath').value.trim() || null,
         target_accounts: [accountId],
         schedule_at: dateTimeLocalToIso('scheduleAt'),
+        visibility: document.getElementById('visibility').value,
         submit: document.getElementById('submit').checked,
         approval_required: true,
         approved: document.getElementById('approved').checked,
@@ -293,11 +304,12 @@ export function renderPublishPage() {
         account_id: accountId,
         source_dir: document.getElementById('scanSourceDir').value.trim(),
         archive_dir: document.getElementById('scanArchiveDir').value.trim(),
-        limit: Number(document.getElementById('scanLimit').value || 20),
+        limit: Number(document.getElementById('scanLimit').value || 1),
         submit: document.getElementById('scanSubmit').checked,
         approved: document.getElementById('scanApproved').checked,
         approval_required: !document.getElementById('scanApproved').checked,
         schedule_at: dateTimeLocalToIso('scanScheduleAt'),
+        visibility: document.getElementById('scanVisibility').value,
         check_comments_after_minutes: Number(document.getElementById('scanCheckMinutes').value || 60),
         require_caption: document.getElementById('requireCaption').checked,
       };
@@ -314,13 +326,14 @@ export function renderPublishPage() {
         account_id: accountId,
         source_dir: document.getElementById('scanSourceDir').value.trim(),
         archive_dir: document.getElementById('scanArchiveDir').value.trim(),
-        scan_limit: Number(document.getElementById('scanLimit').value || 20),
+        scan_limit: Number(document.getElementById('scanLimit').value || 1),
         max_publish_count: 1,
         submit,
         approved: document.getElementById('scanApproved').checked,
         approval_required: !document.getElementById('scanApproved').checked,
         require_caption: document.getElementById('requireCaption').checked,
         schedule_at: dateTimeLocalToIso('scanScheduleAt'),
+        visibility: document.getElementById('scanVisibility').value,
         check_comments_after_minutes: Number(document.getElementById('scanCheckMinutes').value || 60),
         execute: true,
       };

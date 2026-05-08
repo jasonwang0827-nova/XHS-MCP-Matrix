@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { MatrixTask } from '../scheduler/types';
-import { PublishContentItem, PublishContentStatus, PublishContentType, PublishRecord } from './types';
+import { PublishContentItem, PublishContentStatus, PublishContentType, PublishRecord, PublishVisibility } from './types';
 
 const PUBLISH_DIR = '/Users/jason/Nova/XHS-mcp/data/publish';
 const CONTENT_POOL_FILE = path.join(PUBLISH_DIR, 'content-pool.json');
@@ -29,6 +29,16 @@ function stableId(input: string) {
 
 function compactText(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function normalizeVisibility(value: unknown): PublishVisibility | null {
+  const text = compactText(value);
+  if (text === '公开可见' || text === '仅自己可见' || text === '仅互关好友可见') return text;
+  return null;
+}
+
+function defaultVisibility(value: unknown): PublishVisibility {
+  return normalizeVisibility(value) || '仅自己可见';
 }
 
 function safeAccountId(accountId: string) {
@@ -72,16 +82,19 @@ function parseCaptionFile(captionPath: string | null) {
       tags: Array.isArray(parsed.tags)
         ? parsed.tags.map(compactText).filter(Boolean)
         : String(parsed.tags || '').split(/[，,、#\n]+/).map((item) => item.trim()).filter(Boolean),
+      visibility: normalizeVisibility(parsed.visibility),
     };
   }
 
   const lines = raw.split(/\r?\n/);
   const titleLine = lines.find((line) => /^标题[:：]/.test(line)) || lines[0] || '';
   const tagLine = lines.find((line) => /^标签[:：]/.test(line));
+  const visibilityLine = lines.find((line) => /^可见范围[:：]/.test(line));
   const title = titleLine.replace(/^标题[:：]/, '').trim();
   const content = lines
     .filter((line, idx) => idx !== 0 || /^标题[:：]/.test(line))
     .filter((line) => !/^标题[:：]/.test(line) && !/^标签[:：]/.test(line))
+    .filter((line) => !/^可见范围[:：]/.test(line))
     .join('\n')
     .trim();
   const tags = (tagLine || '')
@@ -89,8 +102,9 @@ function parseCaptionFile(captionPath: string | null) {
     .split(/[，,、#\s]+/)
     .map((item) => item.trim())
     .filter(Boolean);
+  const visibility = normalizeVisibility((visibilityLine || '').replace(/^可见范围[:：]/, ''));
 
-  return { title, content: content || raw, tags };
+  return { title, content: content || raw, tags, visibility };
 }
 
 export function readPublishContentPool(): PublishContentItem[] {
@@ -133,6 +147,7 @@ export function normalizePublishContent(input: Partial<PublishContentItem>): Pub
     client_id: input.client_id || null,
     growth_profile_id: input.growth_profile_id || null,
     schedule_at: input.schedule_at || null,
+    visibility: defaultVisibility(input.visibility),
     submit: Boolean(input.submit),
     approval_required: input.approval_required ?? true,
     approved: Boolean(input.approved),
@@ -258,6 +273,7 @@ function buildPublishPayload(item: PublishContentItem, accountId: string) {
     caption_path: item.caption_path || undefined,
     archive_dir: item.archive_dir || undefined,
     schedule_at: item.schedule_at || undefined,
+    visibility: item.visibility || undefined,
     check_comments_after_minutes: item.check_comments_after_minutes || undefined,
     submit: Boolean(item.submit),
     approval_required: item.approval_required,
@@ -276,6 +292,7 @@ export function scanVideoFolderToContentPool(input: {
   min_interval_hours?: number;
   max_retry?: number;
   schedule_at?: string | null;
+  visibility?: PublishVisibility | string | null;
   limit?: number;
   check_comments_after_minutes?: number | null;
   require_caption?: boolean;
@@ -319,6 +336,7 @@ export function scanVideoFolderToContentPool(input: {
       archive_dir: archiveDir,
       target_accounts: [input.account_id],
       schedule_at: input.schedule_at || null,
+      visibility: caption.visibility || defaultVisibility(input.visibility),
       submit: Boolean(input.submit),
       approval_required: input.approval_required ?? false,
       approved: input.approved ?? true,

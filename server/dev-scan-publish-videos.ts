@@ -24,6 +24,8 @@ const result = scanVideoFolderToContentPool({
   daily_limit: args.daily_limit ? Number(args.daily_limit) : 1,
   min_interval_hours: args.min_interval_hours ? Number(args.min_interval_hours) : 6,
   max_retry: args.max_retry ? Number(args.max_retry) : 2,
+  schedule_at: args.schedule_at || null,
+  visibility: args.visibility || '仅自己可见',
   limit: args.limit ? Number(args.limit) : undefined,
   check_comments_after_minutes: args.check_comments_after_minutes ? Number(args.check_comments_after_minutes) : 60,
 });

@@ -1,5 +1,6 @@
 export type PublishContentType = 'note' | 'video';
 export type PublishContentStatus = 'pending' | 'partial' | 'completed' | 'failed' | 'skipped';
+export type PublishVisibility = '公开可见' | '仅自己可见' | '仅互关好友可见';
 
 export type PublishContentItem = {
   content_id: string;
@@ -17,6 +18,7 @@ export type PublishContentItem = {
   client_id?: string | null;
   growth_profile_id?: string | null;
   schedule_at?: string | null;
+  visibility?: PublishVisibility | null;
   submit?: boolean;
   approval_required?: boolean;
   approved?: boolean;

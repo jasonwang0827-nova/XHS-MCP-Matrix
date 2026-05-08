@@ -88,6 +88,7 @@ canada-study-001.mp4
 很多学生和家长一开始会卡在选校。
 建议先从预算、专业、城市和未来就业四个角度做第一轮筛选。
 标签：加拿大留学, 选校规划, 留学申请
+可见范围：仅自己可见
 ```
 
 ## 5. JSON 文案格式
@@ -96,7 +97,8 @@ canada-study-001.mp4
 {
   "title": "加拿大留学选校怎么开始",
   "content": "很多学生和家长一开始会卡在选校。建议先从预算、专业、城市和未来就业四个角度做第一轮筛选。",
-  "tags": ["加拿大留学", "选校规划", "留学申请"]
+  "tags": ["加拿大留学", "选校规划", "留学申请"],
+  "visibility": "仅自己可见"
 }
 ```
 
@@ -115,11 +117,12 @@ Content-Type: application/json
 {
   "account_id": "xhs_test_01",
   "schedule_at": "2026-05-03T22:00:00.000Z",
+  "visibility": "仅自己可见",
   "submit": true,
   "approved": true,
   "approval_required": false,
   "require_caption": true,
-  "scan_limit": 20,
+  "scan_limit": 1,
   "max_publish_count": 1,
   "check_comments_after_minutes": 60,
   "execute": true
@@ -135,6 +138,18 @@ Content-Type: application/json
 - 时间格式：ISO8601，例如 `2026-05-03T22:00:00.000Z`
 - 时间范围：建议未来 1 小时到 14 天内
 - 这不是本地定时器，不需要 OpenClaw 等到发布时间再调用
+
+`visibility` 是小红书可见范围，默认值必须使用 `仅自己可见`。
+
+支持值：
+
+```text
+仅自己可见
+仅互关好友可见
+公开可见
+```
+
+账号前期或测试发布时，OpenClaw 默认使用 `仅自己可见`；只有用户明确要求公开发布，才改成 `公开可见`。
 
 ## 7. Dry Run 测试
 
@@ -173,6 +188,7 @@ npm run dev:openclaw-publish-video -- \
   --approval_required false \
   --require_caption true \
   --schedule_at 2026-05-03T22:00:00.000Z \
+  --visibility 仅自己可见 \
   --max_publish_count 1
 ```
 
@@ -181,7 +197,7 @@ npm run dev:openclaw-publish-video -- \
 ```text
 读取 account_id
 -> 自动定位该账号 video-inbox
--> 扫描视频
+-> 扫描视频，默认只导入 1 条
 -> 找同名文案
 -> 加入内容池
 -> 生成发布任务

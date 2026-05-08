@@ -31,6 +31,7 @@ if (args.file) {
     video_path: args.video_path || null,
     target_accounts: split(args.accounts || args.target_accounts),
     schedule_at: args.schedule_at || null,
+    visibility: args.visibility || '仅自己可见',
     submit: args.submit === 'true',
     approved: args.approved === 'true',
     approval_required: args.approval_required !== 'false',

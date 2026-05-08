@@ -7,6 +7,7 @@
 - 每个账号使用自己的素材目录
 - OpenClaw 现在调用接口，系统立即上传视频
 - 如果传入 `schedule_at`，系统会在小红书官方发布页设置定时发布
+- 可见范围 `visibility` 默认必须是 `仅自己可见`
 - 这不是本地定时器，不需要 OpenClaw 等到发布时间再调用
 - 发布时间必须是未来 1 小时到 14 天内
 
@@ -115,6 +116,7 @@ TXT / MD：
 很多学生和家长一开始会卡在选校。
 建议先从预算、专业、城市和未来就业四个角度做第一轮筛选。
 标签：加拿大留学, 选校规划, 留学申请
+可见范围：仅自己可见
 ```
 
 JSON：
@@ -123,9 +125,20 @@ JSON：
 {
   "title": "加拿大留学选校怎么开始",
   "content": "很多学生和家长一开始会卡在选校。建议先从预算、专业、城市和未来就业四个角度做第一轮筛选。",
-  "tags": ["加拿大留学", "选校规划", "留学申请"]
+  "tags": ["加拿大留学", "选校规划", "留学申请"],
+  "visibility": "仅自己可见"
 }
 ```
+
+可见范围支持：
+
+```text
+仅自己可见
+仅互关好友可见
+公开可见
+```
+
+如果文案里没有写 `visibility` 或 `可见范围`，系统默认使用 `仅自己可见`。
 
 ## 6. Dry Run 检查
 
@@ -142,11 +155,12 @@ Content-Type: application/json
 {
   "account_id": "xhs_test_01",
   "schedule_at": "2026-05-03T22:00:00.000Z",
+  "visibility": "仅自己可见",
   "submit": false,
   "approved": true,
   "approval_required": false,
   "require_caption": true,
-  "scan_limit": 20,
+  "scan_limit": 1,
   "max_publish_count": 1,
   "execute": false
 }
@@ -159,6 +173,7 @@ cd /Users/jason/Nova/XHS-mcp
 npm run dev:openclaw-publish-video -- \
   --account xhs_test_01 \
   --schedule_at 2026-05-03T22:00:00.000Z \
+  --visibility 仅自己可见 \
   --submit false \
   --approved true \
   --approval_required false \
@@ -180,11 +195,12 @@ Content-Type: application/json
 {
   "account_id": "xhs_test_01",
   "schedule_at": "2026-05-03T22:00:00.000Z",
+  "visibility": "仅自己可见",
   "submit": true,
   "approved": true,
   "approval_required": false,
   "require_caption": true,
-  "scan_limit": 20,
+  "scan_limit": 1,
   "max_publish_count": 1,
   "check_comments_after_minutes": 60,
   "execute": true
@@ -198,6 +214,7 @@ cd /Users/jason/Nova/XHS-mcp
 npm run dev:openclaw-publish-video -- \
   --account xhs_test_01 \
   --schedule_at 2026-05-03T22:00:00.000Z \
+  --visibility 仅自己可见 \
   --submit true \
   --approved true \
   --approval_required false \
